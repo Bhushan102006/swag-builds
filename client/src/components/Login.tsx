@@ -3,9 +3,10 @@ import { Truck } from 'lucide-react';
 
 interface LoginProps {
   onLogin: () => void;
+  onSwitchToSignup: () => void;
 }
 
-export default function Login({ onLogin }: LoginProps) {
+export default function Login({ onLogin, onSwitchToSignup }: LoginProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('dispatcher');
@@ -24,7 +25,7 @@ export default function Login({ onLogin }: LoginProps) {
   return (
     <div className="flex h-screen w-full bg-background font-body-md text-on-surface overflow-hidden">
       {/* Left Branding Section */}
-      <section className="hidden lg:flex flex-col justify-between w-[40%] bg-gradient-to-br from-[#141b2c] to-[#1a2542] p-xl relative overflow-hidden">
+      <section className="hidden lg:flex flex-col justify-between w-[30%] bg-gradient-to-br from-[#141b2c] to-[#1a2542] p-xl relative overflow-hidden">
         <div className="absolute top-0 right-0 w-full h-full opacity-10 pointer-events-none"></div>
         <div className="relative z-10">
           <div className="flex items-center gap-sm mb-xl">
@@ -153,28 +154,16 @@ export default function Login({ onLogin }: LoginProps) {
               Sign In
             </button>
           </form>
-          
-          <div className="mt-xl pt-xl border-t border-outline-variant">
-            <p className="font-label-sm text-label-sm text-on-surface-variant mb-md text-center">Access is scoped by role after login:</p>
-            <div className="grid grid-cols-2 gap-sm">
-              <div className="p-sm bg-surface-container-high rounded border border-outline-variant/30">
-                <p className="font-label-sm text-label-sm font-bold text-on-surface">Fleet Manager</p>
-                <p className="font-label-sm text-label-sm text-on-surface-variant leading-tight">Fleet, Maintenance</p>
-              </div>
-              <div className="p-sm bg-surface-container-high rounded border border-outline-variant/30">
-                <p className="font-label-sm text-label-sm font-bold text-on-surface">Dispatcher</p>
-                <p className="font-label-sm text-label-sm text-on-surface-variant leading-tight">Dashboard, Trips</p>
-              </div>
-              <div className="p-sm bg-surface-container-high rounded border border-outline-variant/30">
-                <p className="font-label-sm text-label-sm font-bold text-on-surface">Safety Officer</p>
-                <p className="font-label-sm text-label-sm text-on-surface-variant leading-tight">Drivers, Compliance</p>
-              </div>
-              <div className="p-sm bg-surface-container-high rounded border border-outline-variant/30">
-                <p className="font-label-sm text-label-sm font-bold text-on-surface">Financial Analyst</p>
-                <p className="font-label-sm text-label-sm text-on-surface-variant leading-tight">Fuel & Expenses, Analytics</p>
-              </div>
-            </div>
-          </div>
+
+          <p className="text-center mt-lg font-body-md text-body-md text-on-surface-variant">
+            Don't have an account?{' '}
+            <button
+              onClick={onSwitchToSignup}
+              className="text-on-surface font-bold hover:underline cursor-pointer bg-transparent border-none"
+            >
+              Sign Up
+            </button>
+          </p>
         </div>
       </main>
     </div>
