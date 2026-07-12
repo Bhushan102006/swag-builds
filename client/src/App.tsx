@@ -39,6 +39,7 @@ export default function App() {
     if (role === 'dispatcher') fullName = 'Ranjit K.';
     else if (role === 'safety_officer') fullName = 'Sarah Connor';
     else if (role === 'financial_analyst') fullName = 'John Doe';
+    else if (role === 'fleet_manager') fullName = 'Admin User'; // Matches screenshot "Admin User / Fleet Manager"
     
     const user: User = { fullName, email, role };
     setCurrentUser(user);
