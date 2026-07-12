@@ -7,8 +7,10 @@ import VehicleRegistry from './components/VehicleRegistry';
 import Maintenance from './components/Maintenance';
 import Reports from './components/Reports';
 import Trips from './components/Trips';
+import Drivers from './components/Drivers';
+import Settings from './components/Settings';
 
-export type Screen = 'dashboard' | 'fleet' | 'trips' | 'maintenance' | 'reports';
+export type Screen = 'dashboard' | 'fleet' | 'trips' | 'drivers' | 'maintenance' | 'reports' | 'settings';
 type AuthScreen = 'login' | 'signup';
 
 export interface User {
@@ -80,9 +82,16 @@ export default function App() {
     );
   }
 
-  // Ensure role has access to trips screen; if not, fall back to dashboard
+  // Ensure role has access to trips/drivers screen; if not, fall back to dashboard
   const hasTripsAccess = currentUser?.role === 'dispatcher' || currentUser?.role === 'safety_officer';
-  const activeScreen = (currentScreen === 'trips' && !hasTripsAccess) ? 'dashboard' : currentScreen;
+  const hasDriversAccess = currentUser?.role === 'fleet_manager' || currentUser?.role === 'safety_officer';
+  
+  let activeScreen = currentScreen;
+  if (currentScreen === 'trips' && !hasTripsAccess) {
+    activeScreen = 'dashboard';
+  } else if (currentScreen === 'drivers' && !hasDriversAccess) {
+    activeScreen = 'dashboard';
+  }
 
   return (
     <Layout 
@@ -94,8 +103,10 @@ export default function App() {
       {activeScreen === 'dashboard' && <Dashboard />}
       {activeScreen === 'fleet' && <VehicleRegistry />}
       {activeScreen === 'trips' && <Trips role={currentUser?.role || 'dispatcher'} />}
+      {activeScreen === 'drivers' && <Drivers />}
       {activeScreen === 'maintenance' && <Maintenance />}
       {activeScreen === 'reports' && <Reports />}
+      {activeScreen === 'settings' && <Settings />}
     </Layout>
   );
 }

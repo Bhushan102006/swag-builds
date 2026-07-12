@@ -34,6 +34,10 @@ export default function Layout({ children, currentScreen, onNavigate, user, onLo
     navItems.push({ id: 'trips', label: 'Trips', icon: Route });
   }
 
+  if (user?.role === 'fleet_manager' || user?.role === 'safety_officer') {
+    navItems.push({ id: 'drivers', label: 'Drivers', icon: Users });
+  }
+
   navItems.push(
     { id: 'maintenance', label: 'Maintenance', icon: Wrench },
     { id: 'reports', label: 'Analytics', icon: BarChart2 }
@@ -72,10 +76,17 @@ export default function Layout({ children, currentScreen, onNavigate, user, onLo
           ))}
           
           <div className="mt-auto mb-4 border-t border-outline-variant/20 pt-4">
-             <div className="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-70 cursor-not-allowed">
+             <button 
+               onClick={() => onNavigate('settings')}
+               className={`flex w-full items-center gap-3 px-4 py-3 rounded-lg transition-all text-left ${
+                 currentScreen === 'settings'
+                   ? 'border-l-4 border-secondary-container bg-on-primary-fixed-variant text-on-tertiary active:scale-[0.99] rounded-l-none'
+                   : 'text-on-primary-container opacity-70 hover:bg-on-primary-fixed-variant hover:opacity-100'
+               }`}
+             >
               <Settings size={20} />
               <span className="text-label-md font-label-md">Settings</span>
-            </div>
+            </button>
           </div>
         </nav>
       </aside>
