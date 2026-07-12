@@ -6,13 +6,15 @@ const {
   updateDriver,
   deleteDriver,
 } = require("../controllers/driver.controllers");
+const { isLoggedIn, authorizeRoles } = require("../middlewares/auth.middleware");
 
 const router = express.Router();
 
-router.post("/", createDriver);
-router.get("/", getDrivers);
-router.get("/:id", getDriverById);
-router.put("/:id", updateDriver);
-router.delete("/:id", deleteDriver);
+// Full: Fleet Manager, Safety Officer
+router.post("/", isLoggedIn, authorizeRoles("Fleet Manager", "Safety Officer"), createDriver);
+router.get("/", isLoggedIn, authorizeRoles("Fleet Manager", "Safety Officer"), getDrivers);
+router.get("/:id", isLoggedIn, authorizeRoles("Fleet Manager", "Safety Officer"), getDriverById);
+router.put("/:id", isLoggedIn, authorizeRoles("Fleet Manager", "Safety Officer"), updateDriver);
+router.delete("/:id", isLoggedIn, authorizeRoles("Fleet Manager", "Safety Officer"), deleteDriver);
 
 module.exports = router;
