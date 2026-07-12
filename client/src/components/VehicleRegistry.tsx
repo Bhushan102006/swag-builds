@@ -1,9 +1,62 @@
-import React from 'react';
-import { Plus, Filter, Edit, Eye, Info, ChevronLeft, ChevronRight, Lock } from 'lucide-react';
+import React, { useState } from 'react';
+import { Plus, Filter, Edit, Eye, Info, ChevronLeft, ChevronRight, Lock, Truck } from 'lucide-react';
+
+interface Vehicle {
+  regNo: string;
+  licenseNo?: string;
+  name: string;
+  type: string;
+  capacity: string;
+  odometer: string;
+  status: string;
+}
 
 export default function VehicleRegistry({ readOnly = false }: { readOnly?: boolean }) {
+  const [vehicles, setVehicles] = useState<Vehicle[]>([
+    { regNo: 'GJ01BH5121', name: 'VAN-05', type: 'Van', capacity: '500 kg', odometer: '74,000 km', status: 'Available' },
+    { regNo: 'GJ01BH9981', name: 'TRUCK-11', type: 'Truck', capacity: '5 Ton', odometer: '1,82,000 km', status: 'On Trip' }
+  ]);
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [regNo, setRegNo] = useState('');
+  const [licenseNo, setLicenseNo] = useState('');
+  const [name, setName] = useState('');
+  const [type, setType] = useState('Van');
+  const [capacity, setCapacity] = useState('500 kg');
+  const [odometer, setOdometer] = useState('0 km');
+
+  const handleAddSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!regNo || !name) return;
+
+    setVehicles([{
+      regNo,
+      licenseNo,
+      name,
+      type,
+      capacity,
+      odometer,
+      status: 'Available'
+    }, ...vehicles]);
+
+    setIsModalOpen(false);
+    // Reset
+    setRegNo('');
+    setLicenseNo('');
+    setName('');
+    setType('Van');
+    setCapacity('500 kg');
+    setOdometer('0 km');
+  };
+
+  const getStatusStyle = (status: string) => {
+    if (status === 'Available') return 'bg-[#DEF7EC] text-[#03543F]';
+    if (status === 'On Trip') return 'bg-[#E1EFFE] text-[#1E429F]';
+    return 'bg-surface-container-high text-on-surface-variant';
+  };
+
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full relative">
       <section className="px-xl py-lg flex items-end justify-between shrink-0">
         <div>
           <h2 className="text-display-lg font-display-lg text-on-surface flex items-center gap-3">
@@ -13,7 +66,10 @@ export default function VehicleRegistry({ readOnly = false }: { readOnly?: boole
         </div>
         <div className="flex gap-3">
           {!readOnly && (
-            <button className="flex items-center gap-2 bg-on-tertiary-container text-on-tertiary px-6 py-2.5 rounded-lg font-button-md text-button-md shadow-sm hover:opacity-90 transition-all active:scale-95">
+            <button 
+              onClick={() => setIsModalOpen(true)}
+              className="flex items-center gap-2 bg-on-tertiary-container text-on-tertiary px-6 py-2.5 rounded-lg font-button-md text-button-md shadow-sm hover:opacity-90 transition-all active:scale-95"
+            >
               <Plus size={20} />
               Add Vehicle
             </button>
@@ -61,35 +117,29 @@ export default function VehicleRegistry({ readOnly = false }: { readOnly?: boole
                 </tr>
               </thead>
               <tbody className="divide-y divide-outline-variant">
-                <tr className="hover:bg-surface-container-low transition-colors group">
-                  <td className="px-gutter py-4 font-mono-md text-mono-md text-on-surface">GJ01BH5121</td>
-                  <td className="px-gutter py-4 font-body-md text-on-surface">VAN-05</td>
-                  <td className="px-gutter py-4 font-body-md text-on-surface-variant">Van</td>
-                  <td className="px-gutter py-4 font-mono-md text-mono-md text-right">500 kg</td>
-                  <td className="px-gutter py-4 font-mono-md text-mono-md text-right">74,000 km</td>
-                  <td className="px-gutter py-4"><span className="px-2.5 py-1 rounded-full font-medium text-xs bg-[#DEF7EC] text-[#03543F]">Available</span></td>
-                  <td className="px-gutter py-4">
-                    {!readOnly && <button className="p-1 hover:text-secondary opacity-0 group-hover:opacity-100 transition-all"><Edit size={16}/></button>}
-                    <button className="p-1 hover:text-secondary opacity-0 group-hover:opacity-100 transition-all"><Eye size={16}/></button>
-                  </td>
-                </tr>
-                <tr className="hover:bg-surface-container-low transition-colors group">
-                  <td className="px-gutter py-4 font-mono-md text-mono-md text-on-surface">GJ01BH9981</td>
-                  <td className="px-gutter py-4 font-body-md text-on-surface">TRUCK-11</td>
-                  <td className="px-gutter py-4 font-body-md text-on-surface-variant">Truck</td>
-                  <td className="px-gutter py-4 font-mono-md text-mono-md text-right">5 Ton</td>
-                  <td className="px-gutter py-4 font-mono-md text-mono-md text-right">1,82,000 km</td>
-                  <td className="px-gutter py-4"><span className="px-2.5 py-1 rounded-full font-medium text-xs bg-[#E1EFFE] text-[#1E429F]">On Trip</span></td>
-                  <td className="px-gutter py-4">
-                    <button className="p-1 hover:text-secondary opacity-0 group-hover:opacity-100 transition-all"><Edit size={16}/></button>
-                    <button className="p-1 hover:text-secondary opacity-0 group-hover:opacity-100 transition-all"><Eye size={16}/></button>
-                  </td>
-                </tr>
+                {vehicles.map((v, i) => (
+                  <tr key={i} className="hover:bg-surface-container-low transition-colors group">
+                    <td className="px-gutter py-4 font-mono-md text-mono-md text-on-surface">{v.regNo}</td>
+                    <td className="px-gutter py-4 font-body-md text-on-surface">{v.name}</td>
+                    <td className="px-gutter py-4 font-body-md text-on-surface-variant">{v.type}</td>
+                    <td className="px-gutter py-4 font-mono-md text-mono-md text-right">{v.capacity}</td>
+                    <td className="px-gutter py-4 font-mono-md text-mono-md text-right">{v.odometer}</td>
+                    <td className="px-gutter py-4">
+                      <span className={`px-2.5 py-1 rounded-full font-medium text-xs ${getStatusStyle(v.status)}`}>
+                        {v.status}
+                      </span>
+                    </td>
+                    <td className="px-gutter py-4">
+                      {!readOnly && <button className="p-1 hover:text-secondary opacity-0 group-hover:opacity-100 transition-all"><Edit size={16}/></button>}
+                      <button className="p-1 hover:text-secondary opacity-0 group-hover:opacity-100 transition-all"><Eye size={16}/></button>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
           <div className="px-gutter py-4 border-t border-outline-variant bg-surface-container-lowest flex items-center justify-between shrink-0">
-            <p className="text-label-md font-label-md text-on-surface-variant">Showing <span className="text-on-surface font-semibold">1-2</span> of <span className="text-on-surface font-semibold">42</span> vehicles</p>
+            <p className="text-label-md font-label-md text-on-surface-variant">Showing <span className="text-on-surface font-semibold">1-{vehicles.length}</span> of <span className="text-on-surface font-semibold">{vehicles.length + 40}</span> vehicles</p>
             <div className="flex items-center gap-2">
               <button className="w-8 h-8 flex items-center justify-center rounded border border-outline-variant hover:bg-surface-container text-on-surface-variant transition-all"><ChevronLeft size={16}/></button>
               <button className="w-8 h-8 flex items-center justify-center rounded border border-secondary-container bg-secondary-fixed text-secondary font-bold text-label-md">1</button>
@@ -106,6 +156,116 @@ export default function VehicleRegistry({ readOnly = false }: { readOnly?: boole
           </p>
         </div>
       </div>
+
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-background/80 flex items-center justify-center z-[100] backdrop-blur-sm animate-in fade-in duration-200 p-4">
+          <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant shadow-lg w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="px-lg py-md border-b border-outline-variant flex items-center justify-between bg-surface-container-low">
+              <h3 className="text-headline-md font-headline-md text-on-surface flex items-center gap-2">
+                <Truck size={20} className="text-secondary" /> Register New Vehicle
+              </h3>
+              <button 
+                onClick={() => setIsModalOpen(false)}
+                className="w-8 h-8 flex items-center justify-center rounded bg-surface-container-highest text-on-surface hover:bg-outline-variant transition-colors"
+              >
+                &times;
+              </button>
+            </div>
+            
+            <form onSubmit={handleAddSubmit} className="p-lg space-y-md">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-md">
+                <div className="space-y-xs">
+                  <label className="text-label-sm font-label-sm text-outline uppercase tracking-wider block">Vehicle Reg No.</label>
+                  <input 
+                    type="text" 
+                    value={regNo} 
+                    onChange={(e) => setRegNo(e.target.value.toUpperCase())}
+                    placeholder="e.g. MH01AB1234"
+                    required
+                    className="w-full bg-surface border border-outline-variant rounded-lg px-3 py-2.5 text-body-md focus:ring-2 focus:ring-secondary/20 focus:border-secondary outline-none transition-all uppercase"
+                  />
+                </div>
+
+                <div className="space-y-xs">
+                  <label className="text-label-sm font-label-sm text-outline uppercase tracking-wider block">License/Permit No.</label>
+                  <input 
+                    type="text" 
+                    value={licenseNo} 
+                    onChange={(e) => setLicenseNo(e.target.value)}
+                    placeholder="e.g. PN-2023-X"
+                    className="w-full bg-surface border border-outline-variant rounded-lg px-3 py-2.5 text-body-md focus:ring-2 focus:ring-secondary/20 focus:border-secondary outline-none transition-all"
+                  />
+                </div>
+
+                <div className="space-y-xs">
+                  <label className="text-label-sm font-label-sm text-outline uppercase tracking-wider block">Name/Model</label>
+                  <input 
+                    type="text" 
+                    value={name} 
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="e.g. TATA Ace"
+                    required
+                    className="w-full bg-surface border border-outline-variant rounded-lg px-3 py-2.5 text-body-md focus:ring-2 focus:ring-secondary/20 focus:border-secondary outline-none transition-all"
+                  />
+                </div>
+
+                <div className="space-y-xs">
+                  <label className="text-label-sm font-label-sm text-outline uppercase tracking-wider block">Vehicle Type</label>
+                  <select 
+                    value={type} 
+                    onChange={(e) => setType(e.target.value)}
+                    className="w-full bg-surface border border-outline-variant rounded-lg px-3 py-2.5 text-body-md focus:ring-2 focus:ring-secondary/20 focus:border-secondary outline-none transition-all"
+                  >
+                    <option value="Van">Van</option>
+                    <option value="Truck">Truck</option>
+                    <option value="Heavy Truck">Heavy Truck</option>
+                    <option value="Mini Truck">Mini Truck</option>
+                  </select>
+                </div>
+
+                <div className="space-y-xs">
+                  <label className="text-label-sm font-label-sm text-outline uppercase tracking-wider block">Load Capacity</label>
+                  <input 
+                    type="text" 
+                    value={capacity} 
+                    onChange={(e) => setCapacity(e.target.value)}
+                    placeholder="e.g. 5 Ton, 500 kg"
+                    className="w-full bg-surface border border-outline-variant rounded-lg px-3 py-2 text-body-md focus:ring-2 focus:ring-secondary/20 focus:border-secondary outline-none transition-all"
+                  />
+                </div>
+
+                <div className="space-y-xs">
+                  <label className="text-label-sm font-label-sm text-outline uppercase tracking-wider block">Initial Odometer</label>
+                  <input 
+                    type="text" 
+                    value={odometer} 
+                    onChange={(e) => setOdometer(e.target.value)}
+                    placeholder="e.g. 0 km"
+                    className="w-full bg-surface border border-outline-variant rounded-lg px-3 py-2 text-body-md focus:ring-2 focus:ring-secondary/20 focus:border-secondary outline-none transition-all"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-outline-variant mt-6">
+                <button 
+                  type="button" 
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-6 py-2.5 hover:bg-surface-container rounded-lg text-button-md font-bold transition-all text-on-surface-variant font-medium"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit"
+                  disabled={!regNo || !name}
+                  className="px-6 py-2.5 bg-on-tertiary-container text-on-tertiary font-button-md rounded-lg font-bold shadow-sm hover:opacity-95 active:scale-95 transition-all disabled:opacity-50"
+                >
+                  Confirm Registration
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

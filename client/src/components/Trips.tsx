@@ -16,25 +16,11 @@ import {
   Clock,
   Lock
 } from 'lucide-react';
+import { Trip, useTrips } from '../TripContext';
 
 interface TripsProps {
   role: string;
   readOnly?: boolean;
-}
-
-interface Trip {
-  id: string;
-  source: string;
-  destination: string;
-  vehicle: string;
-  driver: string;
-  status: 'DRAFT' | 'DISPATCHED' | 'IN-TRANSIT' | 'CANCELLED' | 'COMPLETED';
-  eta?: string;
-  startedAt?: string;
-  statusText?: string;
-  date?: string;
-  progress?: number; // 0 to 100
-  cargoWeight: number;
 }
 
 // Nodes for the SVG network map
@@ -65,51 +51,7 @@ const MAP_ROUTES = [
 export default function Trips({ role, readOnly = false }: TripsProps) {
   const isSafetyOfficer = readOnly; // Legacy toggle alias to smoothly bridge with existing logic using readOnly RBAC state.
 
-  // Seed initial mock trips
-  const [trips, setTrips] = useState<Trip[]>([
-    {
-      id: 'TR001',
-      source: 'Gandhinagar Depot',
-      destination: 'Ahmedabad Hub',
-      vehicle: 'VAN-05',
-      driver: 'Alex Mercer',
-      status: 'DISPATCHED',
-      eta: '45 min',
-      cargoWeight: 300
-    },
-    {
-      id: 'TR004',
-      source: 'Vatva Industrial Area',
-      destination: 'Sanand Warehouse',
-      vehicle: 'TRUCK-11',
-      driver: 'Suresh',
-      status: 'IN-TRANSIT',
-      startedAt: '2h ago',
-      statusText: 'Near Sanand',
-      progress: 75,
-      cargoWeight: 3000
-    },
-    {
-      id: 'TR006',
-      source: 'Gandhinagar Depot', // Maps to Gandhinagar Depot in visualization
-      destination: 'Kalol Depot',
-      vehicle: 'TRK-12',
-      driver: 'Awaiting driver assignment',
-      status: 'DRAFT',
-      cargoWeight: 1200
-    },
-    {
-      id: 'TR003',
-      source: 'Ahmedabad Hub',
-      destination: 'Baroda Depot',
-      vehicle: 'VAN-05',
-      driver: 'Alex Mercer',
-      status: 'CANCELLED',
-      statusText: 'Vehicle went to shop for urgent maintenance',
-      date: '10 JUL 2026',
-      cargoWeight: 400
-    }
-  ]);
+  const { trips, addTrip, updateTrip } = useTrips();
 
   // Form State
   const [source, setSource] = useState('Gandhinagar Depot');
@@ -164,7 +106,7 @@ export default function Trips({ role, readOnly = false }: TripsProps) {
       cargoWeight
     };
 
-    setTrips([newTrip, ...trips]);
+    addTrip(newTrip);
     setSelectedTripId(nextId);
     setSuccessMessage(`Trip ${nextId} successfully dispatched!`);
     
@@ -182,17 +124,11 @@ export default function Trips({ role, readOnly = false }: TripsProps) {
   // Handle Driver Assignment (Transition DRAFT to DISPATCHED)
   const handleAssignDriver = (tripId: string) => {
     if (isSafetyOfficer) return;
-    setTrips(trips.map(trip => {
-      if (trip.id === tripId) {
-        return {
-          ...trip,
-          status: 'DISPATCHED',
-          driver: 'Sanjay Dutt',
-          eta: '50 min'
-        };
-      }
-      return trip;
-    }));
+    updateTrip(tripId, {
+      status: 'DISPATCHED',
+      driver: 'Sanjay Dutt',
+      eta: '50 min'
+    });
   };
 
   // Filtered trips list based on Search & Status step filter

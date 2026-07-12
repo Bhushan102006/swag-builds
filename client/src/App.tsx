@@ -11,6 +11,7 @@ import Settings from './components/Settings';
 import Trips from './components/Trips';
 import Fuel from './components/Fuel';
 import { canEdit, canView, Feature } from './accessControl';
+import { TripProvider } from './TripContext';
 
 export type Screen = Feature;
 type AuthScreen = 'login' | 'signup';
@@ -92,20 +93,22 @@ export default function App() {
   }
 
   return (
-    <Layout 
-      currentScreen={activeScreen} 
-      onNavigate={setCurrentScreen}
-      user={currentUser}
-      onLogout={handleLogout}
-    >
-      {activeScreen === 'dashboard' && <Dashboard />}
-      {activeScreen === 'fleet' && <VehicleRegistry readOnly={!canEdit(currentUser?.role || '', 'fleet')} />}
-      {activeScreen === 'trips' && <Trips readOnly={!canEdit(currentUser?.role || '', 'trips')} role={currentUser?.role || ''} />}
-      {activeScreen === 'drivers' && <Drivers readOnly={!canEdit(currentUser?.role || '', 'drivers')} />}
-      {activeScreen === 'maintenance' && <Maintenance />}
-      {activeScreen === 'fuel' && <Fuel readOnly={!canEdit(currentUser?.role || '', 'fuel')} />}
-      {activeScreen === 'analytics' && <Analytics readOnly={!canEdit(currentUser?.role || '', 'analytics')} />}
-      {activeScreen === 'settings' && <Settings />}
-    </Layout>
+    <TripProvider>
+      <Layout 
+        currentScreen={activeScreen} 
+        onNavigate={setCurrentScreen}
+        user={currentUser}
+        onLogout={handleLogout}
+      >
+        {activeScreen === 'dashboard' && <Dashboard readOnlyTrips={!canEdit(currentUser?.role || '', 'trips')} />}
+        {activeScreen === 'fleet' && <VehicleRegistry readOnly={!canEdit(currentUser?.role || '', 'fleet')} />}
+        {activeScreen === 'trips' && <Trips readOnly={!canEdit(currentUser?.role || '', 'trips')} role={currentUser?.role || ''} />}
+        {activeScreen === 'drivers' && <Drivers readOnly={!canEdit(currentUser?.role || '', 'drivers')} />}
+        {activeScreen === 'maintenance' && <Maintenance />}
+        {activeScreen === 'fuel' && <Fuel readOnly={!canEdit(currentUser?.role || '', 'fuel')} />}
+        {activeScreen === 'analytics' && <Analytics readOnly={!canEdit(currentUser?.role || '', 'analytics')} />}
+        {activeScreen === 'settings' && <Settings />}
+      </Layout>
+    </TripProvider>
   );
 }
