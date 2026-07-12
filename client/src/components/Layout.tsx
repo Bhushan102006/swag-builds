@@ -10,23 +10,34 @@ import {
   Settings,
   Search,
   Bell,
-  HelpCircle
+  HelpCircle,
+  Route,
+  LogOut
 } from 'lucide-react';
-import { Screen } from '../App';
+import { Screen, User } from '../App';
 
 interface LayoutProps {
   children: React.ReactNode;
   currentScreen: Screen;
   onNavigate: (screen: Screen) => void;
+  user: User | null;
+  onLogout: () => void;
 }
 
-export default function Layout({ children, currentScreen, onNavigate }: LayoutProps) {
-  const navItems = [
+export default function Layout({ children, currentScreen, onNavigate, user, onLogout }: LayoutProps) {
+  const navItems: { id: Screen; label: string; icon: any }[] = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'fleet', label: 'Fleet', icon: Truck },
+  ];
+
+  if (user?.role === 'dispatcher' || user?.role === 'safety_officer') {
+    navItems.push({ id: 'trips', label: 'Trips', icon: Route });
+  }
+
+  navItems.push(
     { id: 'maintenance', label: 'Maintenance', icon: Wrench },
-    { id: 'reports', label: 'Analytics', icon: BarChart2 },
-  ] as const;
+    { id: 'reports', label: 'Analytics', icon: BarChart2 }
+  );
 
   return (
     <div className="bg-background text-on-background font-body-md overflow-hidden h-screen flex">
@@ -94,14 +105,35 @@ export default function Layout({ children, currentScreen, onNavigate }: LayoutPr
               </button>
             </div>
             <div className="h-8 w-px bg-outline-variant mx-2"></div>
-            <div className="flex items-center gap-3 group cursor-pointer">
-              <div className="text-right">
-                <p className="text-label-md font-label-md text-on-surface">Alex Mercer</p>
-                <p className="text-label-sm font-label-sm text-on-surface-variant">System Admin</p>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3 group">
+                <div className="text-right">
+                  <p className="text-label-md font-label-md text-on-surface">
+                    {user?.fullName || 'Alex Mercer'}
+                  </p>
+                  <p className="text-label-sm font-label-sm text-on-surface-variant">
+                    {user?.role === 'dispatcher' ? 'Fleet Dispatcher' :
+                     user?.role === 'safety_officer' ? 'Safety Officer' :
+                     user?.role === 'fleet_manager' ? 'Fleet Manager' :
+                     user?.role === 'financial_analyst' ? 'Financial Analyst' : 'System Admin'}
+                  </p>
+                </div>
+                <div className="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center text-secondary font-bold overflow-hidden border border-outline-variant">
+                  {(user?.fullName || 'Alex Mercer')
+                    .split(' ')
+                    .map((n) => n[0])
+                    .join('')
+                    .toUpperCase()
+                    .substring(0, 2)}
+                </div>
               </div>
-              <div className="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center text-primary font-bold overflow-hidden border border-outline-variant group-hover:border-secondary transition-all">
-                AM
-              </div>
+              <button 
+                onClick={onLogout}
+                className="p-2 text-on-surface-variant hover:text-error hover:bg-error-container/20 rounded-lg transition-all"
+                title="Sign Out"
+              >
+                <LogOut size={20} />
+              </button>
             </div>
           </div>
         </header>

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Eye, EyeOff, ChevronDown, ArrowRight, Shield, Lock, BarChart3, LayoutGrid } from 'lucide-react';
 
 interface SignupProps {
-  onSignup: () => void;
+  onSignup: (role: string, email: string, fullName: string) => void;
   onSwitchToLogin: () => void;
 }
 
@@ -23,7 +23,7 @@ export default function Signup({ onSignup, onSwitchToLogin }: SignupProps) {
       return;
     }
     setHasError(false);
-    onSignup();
+    onSignup(role, email, fullName);
   };
 
   return (
