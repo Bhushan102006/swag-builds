@@ -1,18 +1,23 @@
 import React from 'react';
-import { Users, Route, Award, AlertTriangle, ChevronDown, UserPlus, FileWarning } from 'lucide-react';
+import { Users, Route, Award, AlertTriangle, ChevronDown, UserPlus, FileWarning, Lock } from 'lucide-react';
 
-export default function Drivers() {
+export default function Drivers({ readOnly = false }: { readOnly?: boolean }) {
   return (
     <div className="p-lg space-y-lg animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex justify-between items-start">
         <div>
-          <h2 className="text-headline-md font-headline-md text-on-surface mb-xs">Drivers & Safety Profiles</h2>
+          <h2 className="text-headline-md font-headline-md text-on-surface mb-xs flex items-center gap-3">
+            Drivers & Safety Profiles
+            {readOnly && <span className="text-[10px] bg-surface-container-high text-outline px-2 py-1 rounded font-bold uppercase tracking-widest flex items-center gap-1 leading-none"><Lock size={10} /> View Only</span>}
+          </h2>
           <p className="text-body-md font-body-md text-on-surface-variant">Monitor driver performance, licensing compliance, and safety standards.</p>
         </div>
-        <button className="bg-depot-amber text-primary-container px-5 py-2.5 rounded-lg font-button-md shadow-sm hover:opacity-90 transition-opacity flex items-center gap-2">
-          <UserPlus size={18} />
-          <span>Add Driver</span>
-        </button>
+        {!readOnly && (
+          <button className="bg-depot-amber text-primary-container px-5 py-2.5 rounded-lg font-button-md shadow-sm hover:opacity-90 transition-opacity flex items-center gap-2">
+            <UserPlus size={18} />
+            <span>Add Driver</span>
+          </button>
+        )}
       </div>
       
       {/* Metrics Row */}

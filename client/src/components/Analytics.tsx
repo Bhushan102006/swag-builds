@@ -1,12 +1,15 @@
 import React from 'react';
-import { Download, TrendingUp, TrendingDown, DollarSign, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Download, TrendingUp, TrendingDown, DollarSign, CheckCircle, AlertTriangle, Lock } from 'lucide-react';
 
-export default function Reports() {
+export default function Analytics({ readOnly = false }: { readOnly?: boolean }) {
   return (
     <div className="p-lg max-w-[1440px] mx-auto space-y-lg">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-md">
         <div>
-          <h2 className="text-display-lg font-display-lg text-primary tracking-tight">Reports & Analytics</h2>
+          <h2 className="text-display-lg font-display-lg text-primary tracking-tight flex items-center gap-3">
+            Reports & Analytics
+            {readOnly && <span className="text-[12px] bg-surface-container-high text-outline px-3 py-1 rounded-full font-bold uppercase tracking-widest flex items-center gap-1 leading-none"><Lock size={12} /> View Only</span>}
+          </h2>
           <p className="text-body-md font-body-md text-on-surface-variant mt-1">Real-time performance monitoring and fleet health overview.</p>
         </div>
         <div className="flex items-center gap-sm">

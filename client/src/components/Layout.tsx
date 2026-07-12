@@ -5,14 +5,16 @@ import {
   Users, 
   Map, 
   Wrench, 
-  Fuel, 
+  Fuel as FuelIcon, 
   BarChart2, 
   Settings,
   Search,
   Bell,
-  HelpCircle
+  HelpCircle,
+  Route
 } from 'lucide-react';
 import { Screen } from '../App';
+import { canView } from '../accessControl';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -24,13 +26,13 @@ interface LayoutProps {
 export default function Layout({ children, currentScreen, onNavigate, userRole }: LayoutProps) {
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'fleet', label: 'Fleet', icon: Truck },
-    ...(userRole === 'fleet_manager' || userRole === 'safety_officer' 
-        ? [{ id: 'drivers' as Screen, label: 'Drivers', icon: Users }] 
-        : []),
+    ...(canView(userRole || '', 'fleet') ? [{ id: 'fleet' as Screen, label: 'Fleet', icon: Truck }] : []),
+    ...(canView(userRole || '', 'drivers') ? [{ id: 'drivers' as Screen, label: 'Drivers', icon: Users }] : []),
+    ...(canView(userRole || '', 'trips') ? [{ id: 'trips' as Screen, label: 'Trips', icon: Route }] : []),
     { id: 'maintenance', label: 'Maintenance', icon: Wrench },
-    { id: 'reports', label: 'Analytics', icon: BarChart2 },
-  ] as const;
+    ...(canView(userRole || '', 'fuel') ? [{ id: 'fuel' as Screen, label: 'Fuel & Expenses', icon: FuelIcon }] : []),
+    ...(canView(userRole || '', 'analytics') ? [{ id: 'analytics' as Screen, label: 'Analytics', icon: BarChart2 }] : []),
+  ];
 
   return (
     <div className="bg-background text-on-background font-body-md overflow-hidden h-screen flex">
@@ -52,7 +54,7 @@ export default function Layout({ children, currentScreen, onNavigate, userRole }
           {navItems.map((item) => (
             <button
               key={item.id}
-              onClick={() => onNavigate(item.id)}
+              onClick={() => onNavigate(item.id as Screen)}
               className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-left ${
                 currentScreen === item.id 
                   ? 'border-l-4 border-secondary-container bg-on-primary-fixed-variant text-on-tertiary active:scale-[0.99] rounded-l-none'
@@ -64,19 +66,21 @@ export default function Layout({ children, currentScreen, onNavigate, userRole }
             </button>
           ))}
           
-          <div className="mt-auto mb-4 border-t border-outline-variant/20 pt-4">
-             <button 
-               onClick={() => onNavigate('settings')}
-               className={`flex w-full items-center gap-3 px-4 py-3 rounded-lg transition-all text-left ${
-                 currentScreen === 'settings'
-                   ? 'border-l-4 border-secondary-container bg-on-primary-fixed-variant text-on-tertiary active:scale-[0.99] rounded-l-none'
-                   : 'text-on-primary-container opacity-70 hover:bg-on-primary-fixed-variant hover:opacity-100'
-               }`}
-             >
-              <Settings size={20} />
-              <span className="text-label-md font-label-md">Settings</span>
-            </button>
-          </div>
+          {canView(userRole || '', 'settings') && (
+            <div className="mt-auto mb-4 border-t border-outline-variant/20 pt-4">
+               <button 
+                 onClick={() => onNavigate('settings')}
+                 className={`flex w-full items-center gap-3 px-4 py-3 rounded-lg transition-all text-left ${
+                   currentScreen === 'settings'
+                     ? 'border-l-4 border-secondary-container bg-on-primary-fixed-variant text-on-tertiary active:scale-[0.99] rounded-l-none'
+                     : 'text-on-primary-container opacity-70 hover:bg-on-primary-fixed-variant hover:opacity-100'
+                 }`}
+               >
+                <Settings size={20} />
+                <span className="text-label-md font-label-md">Settings</span>
+              </button>
+            </div>
+          )}
         </nav>
       </aside>
 

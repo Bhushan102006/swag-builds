@@ -1,18 +1,23 @@
 import React from 'react';
-import { Plus, Filter, Edit, Eye, Info, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, Filter, Edit, Eye, Info, ChevronLeft, ChevronRight, Lock } from 'lucide-react';
 
-export default function VehicleRegistry() {
+export default function VehicleRegistry({ readOnly = false }: { readOnly?: boolean }) {
   return (
     <div className="flex flex-col h-full">
       <section className="px-xl py-lg flex items-end justify-between shrink-0">
         <div>
-          <h2 className="text-display-lg font-display-lg text-on-surface">Vehicle Registry</h2>
+          <h2 className="text-display-lg font-display-lg text-on-surface flex items-center gap-3">
+            Vehicle Registry
+            {readOnly && <span className="text-[12px] bg-surface-container-high text-outline px-3 py-1 rounded-full font-bold uppercase tracking-widest flex items-center gap-1 leading-none h-fit"><Lock size={12} /> View Only</span>}
+          </h2>
         </div>
         <div className="flex gap-3">
-          <button className="flex items-center gap-2 bg-on-tertiary-container text-on-tertiary px-6 py-2.5 rounded-lg font-button-md text-button-md shadow-sm hover:opacity-90 transition-all active:scale-95">
-            <Plus size={20} />
-            Add Vehicle
-          </button>
+          {!readOnly && (
+            <button className="flex items-center gap-2 bg-on-tertiary-container text-on-tertiary px-6 py-2.5 rounded-lg font-button-md text-button-md shadow-sm hover:opacity-90 transition-all active:scale-95">
+              <Plus size={20} />
+              Add Vehicle
+            </button>
+          )}
         </div>
       </section>
 
@@ -64,7 +69,7 @@ export default function VehicleRegistry() {
                   <td className="px-gutter py-4 font-mono-md text-mono-md text-right">74,000 km</td>
                   <td className="px-gutter py-4"><span className="px-2.5 py-1 rounded-full font-medium text-xs bg-[#DEF7EC] text-[#03543F]">Available</span></td>
                   <td className="px-gutter py-4">
-                    <button className="p-1 hover:text-secondary opacity-0 group-hover:opacity-100 transition-all"><Edit size={16}/></button>
+                    {!readOnly && <button className="p-1 hover:text-secondary opacity-0 group-hover:opacity-100 transition-all"><Edit size={16}/></button>}
                     <button className="p-1 hover:text-secondary opacity-0 group-hover:opacity-100 transition-all"><Eye size={16}/></button>
                   </td>
                 </tr>
