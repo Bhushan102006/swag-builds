@@ -1,52 +1,72 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, Filter, Edit, Eye, Info, ChevronLeft, ChevronRight, Lock, Truck } from 'lucide-react';
-
-interface Vehicle {
-  regNo: string;
-  licenseNo?: string;
-  name: string;
-  type: string;
-  capacity: string;
-  odometer: string;
-  status: string;
-}
+import { getVehicles, createVehicle, Vehicle } from '../api';
 
 export default function VehicleRegistry({ readOnly = false }: { readOnly?: boolean }) {
-  const [vehicles, setVehicles] = useState<Vehicle[]>([
-    { regNo: 'GJ01BH5121', name: 'VAN-05', type: 'Van', capacity: '500 kg', odometer: '74,000 km', status: 'Available' },
-    { regNo: 'GJ01BH9981', name: 'TRUCK-11', type: 'Truck', capacity: '5 Ton', odometer: '1,82,000 km', status: 'On Trip' }
-  ]);
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [regNo, setRegNo] = useState('');
-  const [licenseNo, setLicenseNo] = useState('');
-  const [name, setName] = useState('');
-  const [type, setType] = useState('Van');
-  const [capacity, setCapacity] = useState('500 kg');
-  const [odometer, setOdometer] = useState('0 km');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Form State
+  const [registrationNumber, setRegistrationNumber] = useState('');
+  const [vehicleName, setVehicleName] = useState('');
+  const [vehicleType, setVehicleType] = useState('Van');
+  const [maxLoadCapacity, setMaxLoadCapacity] = useState<number | ''>('');
+  const [odometer, setOdometer] = useState<number | ''>('');
+  const [acquisitionCost, setAcquisitionCost] = useState<number | ''>('');
 
-  const handleAddSubmit = (e: React.FormEvent) => {
+  const loadVehicles = async () => {
+    setIsLoading(true);
+    setError('');
+    try {
+      const res = await getVehicles();
+      setVehicles(res.vehicles);
+    } catch (err: any) {
+      setError(err?.message || 'Failed to load vehicles');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadVehicles();
+  }, []);
+
+  const handleAddSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!regNo || !name) return;
+    if (!registrationNumber || !vehicleName || maxLoadCapacity === '' || odometer === '' || acquisitionCost === '') return;
 
-    setVehicles([{
-      regNo,
-      licenseNo,
-      name,
-      type,
-      capacity,
-      odometer,
-      status: 'Available'
-    }, ...vehicles]);
+    setIsSubmitting(true);
+    try {
+      await createVehicle({
+        registrationNumber,
+        vehicleName,
+        vehicleType,
+        maxLoadCapacity: Number(maxLoadCapacity),
+        odometer: Number(odometer),
+        acquisitionCost: Number(acquisitionCost),
+        status: 'Available'
+      });
 
-    setIsModalOpen(false);
-    // Reset
-    setRegNo('');
-    setLicenseNo('');
-    setName('');
-    setType('Van');
-    setCapacity('500 kg');
-    setOdometer('0 km');
+      setIsModalOpen(false);
+      // Reset
+      setRegistrationNumber('');
+      setVehicleName('');
+      setVehicleType('Van');
+      setMaxLoadCapacity('');
+      setOdometer('');
+      setAcquisitionCost('');
+      
+      // Reload list
+      loadVehicles();
+    } catch (err: any) {
+      alert(err?.data?.message || err?.message || 'Failed to create vehicle');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const getStatusStyle = (status: string) => {
@@ -110,40 +130,53 @@ export default function VehicleRegistry({ readOnly = false }: { readOnly?: boole
                   <th className="px-gutter py-4 text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider">Reg No. (Unique)</th>
                   <th className="px-gutter py-4 text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider">Name/Model</th>
                   <th className="px-gutter py-4 text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider">Type</th>
-                  <th className="px-gutter py-4 text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider text-right">Capacity</th>
-                  <th className="px-gutter py-4 text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider text-right">Odometer</th>
+                  <th className="px-gutter py-4 text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider text-right">Capacity (kg)</th>
+                  <th className="px-gutter py-4 text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider text-right">Odometer (km)</th>
                   <th className="px-gutter py-4 text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider">Status</th>
                   <th className="px-gutter py-4 text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-outline-variant">
-                {vehicles.map((v, i) => (
-                  <tr key={i} className="hover:bg-surface-container-low transition-colors group">
-                    <td className="px-gutter py-4 font-mono-md text-mono-md text-on-surface">{v.regNo}</td>
-                    <td className="px-gutter py-4 font-body-md text-on-surface">{v.name}</td>
-                    <td className="px-gutter py-4 font-body-md text-on-surface-variant">{v.type}</td>
-                    <td className="px-gutter py-4 font-mono-md text-mono-md text-right">{v.capacity}</td>
-                    <td className="px-gutter py-4 font-mono-md text-mono-md text-right">{v.odometer}</td>
-                    <td className="px-gutter py-4">
-                      <span className={`px-2.5 py-1 rounded-full font-medium text-xs ${getStatusStyle(v.status)}`}>
-                        {v.status}
-                      </span>
-                    </td>
-                    <td className="px-gutter py-4">
-                      {!readOnly && <button className="p-1 hover:text-secondary opacity-0 group-hover:opacity-100 transition-all"><Edit size={16}/></button>}
-                      <button className="p-1 hover:text-secondary opacity-0 group-hover:opacity-100 transition-all"><Eye size={16}/></button>
-                    </td>
+                {isLoading ? (
+                  <tr>
+                    <td colSpan={7} className="text-center py-8 text-on-surface-variant">Loading vehicles...</td>
                   </tr>
-                ))}
+                ) : error ? (
+                  <tr>
+                    <td colSpan={7} className="text-center py-8 text-error">{error}</td>
+                  </tr>
+                ) : vehicles.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="text-center py-8 text-on-surface-variant">No vehicles found.</td>
+                  </tr>
+                ) : (
+                  vehicles.map((v) => (
+                    <tr key={v._id} className="hover:bg-surface-container-low transition-colors group">
+                      <td className="px-gutter py-4 font-mono-md text-mono-md text-on-surface">{v.registrationNumber}</td>
+                      <td className="px-gutter py-4 font-body-md text-on-surface">{v.vehicleName}</td>
+                      <td className="px-gutter py-4 font-body-md text-on-surface-variant">{v.vehicleType}</td>
+                      <td className="px-gutter py-4 font-mono-md text-mono-md text-right">{v.maxLoadCapacity.toLocaleString()} kg</td>
+                      <td className="px-gutter py-4 font-mono-md text-mono-md text-right">{v.odometer.toLocaleString()} km</td>
+                      <td className="px-gutter py-4">
+                        <span className={`px-2.5 py-1 rounded-full font-medium text-xs ${getStatusStyle(v.status)}`}>
+                          {v.status}
+                        </span>
+                      </td>
+                      <td className="px-gutter py-4">
+                        {!readOnly && <button className="p-1 hover:text-secondary opacity-0 group-hover:opacity-100 transition-all"><Edit size={16}/></button>}
+                        <button className="p-1 hover:text-secondary opacity-0 group-hover:opacity-100 transition-all"><Eye size={16}/></button>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
           <div className="px-gutter py-4 border-t border-outline-variant bg-surface-container-lowest flex items-center justify-between shrink-0">
-            <p className="text-label-md font-label-md text-on-surface-variant">Showing <span className="text-on-surface font-semibold">1-{vehicles.length}</span> of <span className="text-on-surface font-semibold">{vehicles.length + 40}</span> vehicles</p>
+            <p className="text-label-md font-label-md text-on-surface-variant">Showing <span className="text-on-surface font-semibold">{vehicles.length > 0 ? 1 : 0}-{vehicles.length}</span> of <span className="text-on-surface font-semibold">{vehicles.length}</span> vehicles</p>
             <div className="flex items-center gap-2">
               <button className="w-8 h-8 flex items-center justify-center rounded border border-outline-variant hover:bg-surface-container text-on-surface-variant transition-all"><ChevronLeft size={16}/></button>
               <button className="w-8 h-8 flex items-center justify-center rounded border border-secondary-container bg-secondary-fixed text-secondary font-bold text-label-md">1</button>
-              <button className="w-8 h-8 flex items-center justify-center rounded border border-outline-variant hover:bg-surface-container text-on-surface-variant transition-all text-label-md">2</button>
               <button className="w-8 h-8 flex items-center justify-center rounded border border-outline-variant hover:bg-surface-container text-on-surface-variant transition-all"><ChevronRight size={16}/></button>
             </div>
           </div>
@@ -178,8 +211,8 @@ export default function VehicleRegistry({ readOnly = false }: { readOnly?: boole
                   <label className="text-label-sm font-label-sm text-outline uppercase tracking-wider block">Vehicle Reg No.</label>
                   <input 
                     type="text" 
-                    value={regNo} 
-                    onChange={(e) => setRegNo(e.target.value.toUpperCase())}
+                    value={registrationNumber} 
+                    onChange={(e) => setRegistrationNumber(e.target.value.toUpperCase())}
                     placeholder="e.g. MH01AB1234"
                     required
                     className="w-full bg-surface border border-outline-variant rounded-lg px-3 py-2.5 text-body-md focus:ring-2 focus:ring-secondary/20 focus:border-secondary outline-none transition-all uppercase"
@@ -187,22 +220,11 @@ export default function VehicleRegistry({ readOnly = false }: { readOnly?: boole
                 </div>
 
                 <div className="space-y-xs">
-                  <label className="text-label-sm font-label-sm text-outline uppercase tracking-wider block">License/Permit No.</label>
-                  <input 
-                    type="text" 
-                    value={licenseNo} 
-                    onChange={(e) => setLicenseNo(e.target.value)}
-                    placeholder="e.g. PN-2023-X"
-                    className="w-full bg-surface border border-outline-variant rounded-lg px-3 py-2.5 text-body-md focus:ring-2 focus:ring-secondary/20 focus:border-secondary outline-none transition-all"
-                  />
-                </div>
-
-                <div className="space-y-xs">
                   <label className="text-label-sm font-label-sm text-outline uppercase tracking-wider block">Name/Model</label>
                   <input 
                     type="text" 
-                    value={name} 
-                    onChange={(e) => setName(e.target.value)}
+                    value={vehicleName} 
+                    onChange={(e) => setVehicleName(e.target.value)}
                     placeholder="e.g. TATA Ace"
                     required
                     className="w-full bg-surface border border-outline-variant rounded-lg px-3 py-2.5 text-body-md focus:ring-2 focus:ring-secondary/20 focus:border-secondary outline-none transition-all"
@@ -212,36 +234,57 @@ export default function VehicleRegistry({ readOnly = false }: { readOnly?: boole
                 <div className="space-y-xs">
                   <label className="text-label-sm font-label-sm text-outline uppercase tracking-wider block">Vehicle Type</label>
                   <select 
-                    value={type} 
-                    onChange={(e) => setType(e.target.value)}
+                    value={vehicleType} 
+                    onChange={(e) => setVehicleType(e.target.value)}
                     className="w-full bg-surface border border-outline-variant rounded-lg px-3 py-2.5 text-body-md focus:ring-2 focus:ring-secondary/20 focus:border-secondary outline-none transition-all"
                   >
-                    <option value="Van">Van</option>
-                    <option value="Truck">Truck</option>
-                    <option value="Heavy Truck">Heavy Truck</option>
                     <option value="Mini Truck">Mini Truck</option>
+                    <option value="Truck">Truck</option>
+                    <option value="Van">Van</option>
+                    <option value="Pickup">Pickup</option>
+                    <option value="Container">Container</option>
+                    <option value="Trailer">Trailer</option>
+                    <option value="Bus">Bus</option>
+                    <option value="Other">Other</option>
                   </select>
                 </div>
 
                 <div className="space-y-xs">
-                  <label className="text-label-sm font-label-sm text-outline uppercase tracking-wider block">Load Capacity</label>
+                  <label className="text-label-sm font-label-sm text-outline uppercase tracking-wider block">Load Capacity (kg)</label>
                   <input 
-                    type="text" 
-                    value={capacity} 
-                    onChange={(e) => setCapacity(e.target.value)}
-                    placeholder="e.g. 5 Ton, 500 kg"
-                    className="w-full bg-surface border border-outline-variant rounded-lg px-3 py-2 text-body-md focus:ring-2 focus:ring-secondary/20 focus:border-secondary outline-none transition-all"
+                    type="number" 
+                    value={maxLoadCapacity} 
+                    onChange={(e) => setMaxLoadCapacity(Number(e.target.value))}
+                    placeholder="e.g. 500"
+                    required
+                    min="0"
+                    className="w-full bg-surface border border-outline-variant rounded-lg px-3 py-2.5 text-body-md focus:ring-2 focus:ring-secondary/20 focus:border-secondary outline-none transition-all"
                   />
                 </div>
 
                 <div className="space-y-xs">
-                  <label className="text-label-sm font-label-sm text-outline uppercase tracking-wider block">Initial Odometer</label>
+                  <label className="text-label-sm font-label-sm text-outline uppercase tracking-wider block">Initial Odometer (km)</label>
                   <input 
-                    type="text" 
+                    type="number" 
                     value={odometer} 
-                    onChange={(e) => setOdometer(e.target.value)}
-                    placeholder="e.g. 0 km"
-                    className="w-full bg-surface border border-outline-variant rounded-lg px-3 py-2 text-body-md focus:ring-2 focus:ring-secondary/20 focus:border-secondary outline-none transition-all"
+                    onChange={(e) => setOdometer(Number(e.target.value))}
+                    placeholder="e.g. 0"
+                    required
+                    min="0"
+                    className="w-full bg-surface border border-outline-variant rounded-lg px-3 py-2.5 text-body-md focus:ring-2 focus:ring-secondary/20 focus:border-secondary outline-none transition-all"
+                  />
+                </div>
+
+                <div className="space-y-xs">
+                  <label className="text-label-sm font-label-sm text-outline uppercase tracking-wider block">Acquisition Cost (₹)</label>
+                  <input 
+                    type="number" 
+                    value={acquisitionCost} 
+                    onChange={(e) => setAcquisitionCost(Number(e.target.value))}
+                    placeholder="e.g. 500000"
+                    required
+                    min="0"
+                    className="w-full bg-surface border border-outline-variant rounded-lg px-3 py-2.5 text-body-md focus:ring-2 focus:ring-secondary/20 focus:border-secondary outline-none transition-all"
                   />
                 </div>
               </div>
@@ -256,10 +299,10 @@ export default function VehicleRegistry({ readOnly = false }: { readOnly?: boole
                 </button>
                 <button 
                   type="submit"
-                  disabled={!regNo || !name}
+                  disabled={!registrationNumber || !vehicleName || isSubmitting}
                   className="px-6 py-2.5 bg-on-tertiary-container text-on-tertiary font-button-md rounded-lg font-bold shadow-sm hover:opacity-95 active:scale-95 transition-all disabled:opacity-50"
                 >
-                  Confirm Registration
+                  {isSubmitting ? 'Registering...' : 'Confirm Registration'}
                 </button>
               </div>
             </form>

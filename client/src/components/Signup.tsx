@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, ChevronDown, ArrowRight, Shield, Lock, BarChart3, LayoutGrid } from 'lucide-react';
+import { register } from '../api';
 
 interface SignupProps {
-  onSignup: (role: string, email: string, fullName: string) => void;
+  onSignup: (user: { fullName: string; email: string; role: string }, token: string) => void;
   onSwitchToLogin: () => void;
 }
 
@@ -14,16 +15,28 @@ export default function Signup({ onSignup, onSwitchToLogin }: SignupProps) {
   const [role, setRole] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
-  const [hasError, setHasError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSignup = (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!fullName || !email || !password || !role || !agreedToTerms) {
-      setHasError(true);
+      setErrorMessage('Please fill in all required fields and agree to the terms.');
       return;
     }
-    setHasError(false);
-    onSignup(role, email, fullName);
+    setErrorMessage('');
+    setIsLoading(true);
+    try {
+      const res = await register({ fullName, email, password, role, phone: phone || undefined });
+      onSignup(
+        { fullName: res.user.fullName, email: res.user.email, role: res.user.role },
+        res.token
+      );
+    } catch (err: any) {
+      setErrorMessage(err?.data?.message || err?.message || 'Registration failed. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -97,7 +110,7 @@ export default function Signup({ onSignup, onSwitchToLogin }: SignupProps) {
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder="Enter your full name"
-                className={`w-full px-md py-3 rounded-lg border ${hasError && !fullName ? 'border-error' : 'border-outline-variant'} bg-surface-container-low font-body-md text-on-surface placeholder:text-outline focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-all`}
+                className={`w-full px-md py-3 rounded-lg border ${errorMessage && !fullName ? 'border-error' : 'border-outline-variant'} bg-surface-container-low font-body-md text-on-surface placeholder:text-outline focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-all`}
               />
             </div>
 
@@ -109,7 +122,7 @@ export default function Signup({ onSignup, onSwitchToLogin }: SignupProps) {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="admin@transitops.io"
-                className={`w-full px-md py-3 rounded-lg border ${hasError && !email ? 'border-error' : 'border-outline-variant'} bg-surface-container-low font-body-md text-on-surface placeholder:text-outline focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-all`}
+                className={`w-full px-md py-3 rounded-lg border ${errorMessage && !email ? 'border-error' : 'border-outline-variant'} bg-surface-container-low font-body-md text-on-surface placeholder:text-outline focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-all`}
               />
             </div>
 
@@ -134,7 +147,7 @@ export default function Signup({ onSignup, onSwitchToLogin }: SignupProps) {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className={`w-full px-md py-3 rounded-lg border ${hasError && !password ? 'border-error' : 'border-outline-variant'} bg-surface-container-low font-body-md text-on-surface focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-all pr-12`}
+                  className={`w-full px-md py-3 rounded-lg border ${errorMessage && !password ? 'border-error' : 'border-outline-variant'} bg-surface-container-low font-body-md text-on-surface focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-all pr-12`}
                 />
                 <button
                   type="button"
@@ -153,13 +166,13 @@ export default function Signup({ onSignup, onSwitchToLogin }: SignupProps) {
                   id="signup-role"
                   value={role}
                   onChange={(e) => setRole(e.target.value)}
-                  className={`w-full px-md py-3 rounded-lg border ${hasError && !role ? 'border-error' : 'border-outline-variant'} bg-surface-container-low font-body-md text-on-surface focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20 appearance-none cursor-pointer transition-all`}
+                  className={`w-full px-md py-3 rounded-lg border ${errorMessage && !role ? 'border-error' : 'border-outline-variant'} bg-surface-container-low font-body-md text-on-surface focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20 appearance-none cursor-pointer transition-all`}
                 >
                   <option value="" disabled>Select your operational role</option>
-                  <option value="dispatcher">Dispatcher</option>
-                  <option value="fleet_manager">Fleet Manager</option>
-                  <option value="safety_officer">Safety Officer</option>
-                  <option value="financial_analyst">Financial Analyst</option>
+                  <option value="Dispatcher">Dispatcher</option>
+                  <option value="Fleet Manager">Fleet Manager</option>
+                  <option value="Safety Officer">Safety Officer</option>
+                  <option value="Financial Analyst">Financial Analyst</option>
                 </select>
                 <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-outline pointer-events-none" size={20} />
               </div>
@@ -178,21 +191,22 @@ export default function Signup({ onSignup, onSwitchToLogin }: SignupProps) {
               </label>
             </div>
 
-            {hasError && (
+            {errorMessage && (
               <div className="flex items-start gap-sm p-md bg-error-container/50 border border-error rounded-lg">
                 <div className="text-error mt-0.5">!</div>
                 <div>
-                  <p className="font-label-md text-label-md text-on-error-container">Missing required fields</p>
-                  <p className="font-label-sm text-label-sm text-on-error-container opacity-80">Please fill in all required fields and agree to the terms.</p>
+                  <p className="font-label-md text-label-md text-on-error-container">Registration Error</p>
+                  <p className="font-label-sm text-label-sm text-on-error-container opacity-80">{errorMessage}</p>
                 </div>
               </div>
             )}
 
             <button
               type="submit"
-              className="w-full bg-depot-amber text-primary-container font-button-md text-button-md py-3.5 rounded-lg font-bold hover:shadow-[0_0_15px_rgba(232,163,61,0.3)] transition-all active:scale-[0.98] flex items-center justify-center gap-sm"
+              disabled={isLoading}
+              className="w-full bg-depot-amber text-primary-container font-button-md text-button-md py-3.5 rounded-lg font-bold hover:shadow-[0_0_15px_rgba(232,163,61,0.3)] transition-all active:scale-[0.98] flex items-center justify-center gap-sm disabled:opacity-60"
             >
-              Sign Up <ArrowRight size={18} />
+              {isLoading ? 'Creating account...' : <>Sign Up <ArrowRight size={18} /></>}
             </button>
           </form>
 

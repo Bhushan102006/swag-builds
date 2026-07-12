@@ -37,27 +37,21 @@ export default function App() {
   });
   const [currentScreen, setCurrentScreen] = useState<Screen>('dashboard');
 
-  const handleLogin = (role: string, email: string) => {
-    let fullName = 'Alex Mercer';
-    if (role === 'dispatcher') fullName = 'Ranjit K.';
-    else if (role === 'safety_officer') fullName = 'Sarah Connor';
-    else if (role === 'financial_analyst') fullName = 'John Doe';
-    else if (role === 'fleet_manager') fullName = 'Admin User'; // Matches screenshot "Admin User / Fleet Manager"
-    
-    const user: User = { fullName, email, role };
+  const handleLogin = (user: User, token: string) => {
     setCurrentUser(user);
     setIsLoggedIn(true);
     localStorage.setItem('isLoggedIn', 'true');
     localStorage.setItem('currentUser', JSON.stringify(user));
+    localStorage.setItem('token', token);
     setCurrentScreen('dashboard');
   };
 
-  const handleSignup = (role: string, email: string, fullName: string) => {
-    const user: User = { fullName, email, role };
+  const handleSignup = (user: User, token: string) => {
     setCurrentUser(user);
     setIsLoggedIn(true);
     localStorage.setItem('isLoggedIn', 'true');
     localStorage.setItem('currentUser', JSON.stringify(user));
+    localStorage.setItem('token', token);
     setCurrentScreen('dashboard');
   };
 
@@ -66,6 +60,7 @@ export default function App() {
     setCurrentUser(null);
     localStorage.removeItem('isLoggedIn');
     localStorage.removeItem('currentUser');
+    localStorage.removeItem('token');
     setAuthScreen('login');
   };
 

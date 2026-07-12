@@ -1,25 +1,37 @@
 import React, { useState } from 'react';
 import { Truck } from 'lucide-react';
+import { login } from '../api';
 
 interface LoginProps {
-  onLogin: (role: string, email: string) => void;
+  onLogin: (user: { fullName: string; email: string; role: string }, token: string) => void;
   onSwitchToSignup: () => void;
 }
 
 export default function Login({ onLogin, onSwitchToSignup }: LoginProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState('dispatcher');
-  const [hasError, setHasError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
-      setHasError(true);
+      setErrorMessage('Please enter email and password.');
       return;
     }
-    setHasError(false);
-    onLogin(role, email);
+    setErrorMessage('');
+    setIsLoading(true);
+    try {
+      const res = await login(email, password);
+      onLogin(
+        { fullName: res.user.fullName, email: res.user.email, role: res.user.role },
+        res.token
+      );
+    } catch (err: any) {
+      setErrorMessage(err?.data?.message || err?.message || 'Login failed. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -95,7 +107,7 @@ export default function Login({ onLogin, onSwitchToSignup }: LoginProps) {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="admin@transitops.io"
-                  className={`w-full px-md py-3 rounded-lg border ${hasError ? 'border-error text-error' : 'border-outline-variant'} bg-surface-container-low font-body-md text-on-surface placeholder:text-outline focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-all`}
+                  className={`w-full px-md py-3 rounded-lg border ${errorMessage ? 'border-error text-error' : 'border-outline-variant'} bg-surface-container-low font-body-md text-on-surface placeholder:text-outline focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-all`}
                 />
               </div>
             </div>
@@ -112,32 +124,17 @@ export default function Login({ onLogin, onSwitchToSignup }: LoginProps) {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className={`w-full px-md py-3 rounded-lg border ${hasError ? 'border-error text-error' : 'border-outline-variant'} bg-surface-container-low font-body-md text-on-surface focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-all`}
+                  className={`w-full px-md py-3 rounded-lg border ${errorMessage ? 'border-error text-error' : 'border-outline-variant'} bg-surface-container-low font-body-md text-on-surface focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-all`}
                 />
               </div>
             </div>
 
-            <div className="space-y-xs">
-              <label className="font-label-md text-label-md text-on-surface" htmlFor="role">ROLE GROUP</label>
-              <select
-                id="role"
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                className="w-full px-md py-3 rounded-lg border border-outline-variant bg-surface-container-low font-body-md text-on-surface focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20 appearance-none cursor-pointer transition-all"
-              >
-                <option value="dispatcher">Dispatcher</option>
-                <option value="fleet_manager">Fleet Manager</option>
-                <option value="safety_officer">Safety Officer</option>
-                <option value="financial_analyst">Financial Analyst</option>
-              </select>
-            </div>
-
-            {hasError && (
+            {errorMessage && (
               <div className="flex items-start gap-sm p-md bg-error-container/50 border border-error rounded-lg">
                 <div className="text-error mt-0.5">!</div>
                 <div>
-                  <p className="font-label-md text-label-md text-on-error-container">Invalid credentials</p>
-                  <p className="font-label-sm text-label-sm text-on-error-container opacity-80">Please enter email and password.</p>
+                  <p className="font-label-md text-label-md text-on-error-container">Authentication Failed</p>
+                  <p className="font-label-sm text-label-sm text-on-error-container opacity-80">{errorMessage}</p>
                 </div>
               </div>
             )}
@@ -149,9 +146,10 @@ export default function Login({ onLogin, onSwitchToSignup }: LoginProps) {
 
             <button
               type="submit"
-              className="w-full bg-depot-amber text-primary-container font-button-md text-button-md py-3.5 rounded-lg font-bold hover:shadow-[0_0_15px_rgba(232,163,61,0.3)] transition-all active:scale-[0.98] mt-base"
+              disabled={isLoading}
+              className="w-full bg-depot-amber text-primary-container font-button-md text-button-md py-3.5 rounded-lg font-bold hover:shadow-[0_0_15px_rgba(232,163,61,0.3)] transition-all active:scale-[0.98] mt-base disabled:opacity-60"
             >
-              Sign In
+              {isLoading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
 

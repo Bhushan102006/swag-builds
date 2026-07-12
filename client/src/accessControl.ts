@@ -1,20 +1,20 @@
-export type Role = 'dispatcher' | 'fleet_manager' | 'safety_officer' | 'financial_analyst';
+export type Role = 'Dispatcher' | 'Fleet Manager' | 'Safety Officer' | 'Financial Analyst';
 export type Feature = 'dashboard' | 'fleet' | 'drivers' | 'maintenance' | 'analytics' | 'settings' | 'trips' | 'fuel';
 
 const RBAC: Record<Role, { view: Feature[], edit: Feature[] }> = {
-  dispatcher: {
+  'Dispatcher': {
     view: ['dashboard', 'fleet', 'trips', 'settings'],
     edit: ['trips']
   },
-  fleet_manager: {
+  'Fleet Manager': {
     view: ['dashboard', 'fleet', 'drivers', 'analytics', 'settings'],
     edit: ['fleet', 'drivers', 'analytics', 'settings']
   },
-  safety_officer: {
+  'Safety Officer': {
     view: ['dashboard', 'drivers', 'trips', 'settings'],
     edit: ['drivers']
   },
-  financial_analyst: {
+  'Financial Analyst': {
     view: ['dashboard', 'fuel', 'analytics', 'fleet', 'settings'],
     edit: ['fuel', 'analytics']
   }

@@ -24,7 +24,7 @@ async function getDashboard(req, res) {
       Driver.countDocuments({ status: "Available" }),
       Trip.countDocuments({ status: "Dispatched" }),
       Trip.countDocuments({ status: "Completed" }),
-      Maintenance.countDocuments({ status: "Active" }),
+      Maintenance.countDocuments({ status: "Open" }),
     ]);
 
     // Fleet utilization: (On Trip / Total) * 100, rounded to 2 decimal places

@@ -98,15 +98,7 @@ export default function Layout({ children, currentScreen, onNavigate, user, onLo
                 {user?.fullName || 'Admin User'}
               </p>
               <p className="text-[11px] font-label-sm text-[#7d8399] truncate mt-0.5">
-                {user?.role === 'dispatcher'
-                  ? 'Fleet Dispatcher'
-                  : user?.role === 'safety_officer'
-                  ? 'Safety Officer'
-                  : user?.role === 'fleet_manager'
-                  ? 'Fleet Manager'
-                  : user?.role === 'financial_analyst'
-                  ? 'Financial Analyst'
-                  : 'Fleet Manager'}
+                {user?.role || 'Fleet Manager'}
               </p>
             </div>
             <button

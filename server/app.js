@@ -10,7 +10,10 @@ const fuelLogRoutes = require("./src/routes/fuelLog.routes");
 const expenseRoutes = require("./src/routes/expense.routes");
 const reportsRoutes = require("./src/routes/reports.routes");
 
+const cors = require("cors");
+
 const app = express();
+app.use(cors({ origin: "http://localhost:3000", credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 
