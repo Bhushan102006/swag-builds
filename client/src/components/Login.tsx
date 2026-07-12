@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Truck } from 'lucide-react';
 
 interface LoginProps {
-  onLogin: (role: string) => void;
+  onLogin: (role: string, email: string) => void;
   onSwitchToSignup: () => void;
 }
 
@@ -19,7 +19,7 @@ export default function Login({ onLogin, onSwitchToSignup }: LoginProps) {
       return;
     }
     setHasError(false);
-    onLogin(role);
+    onLogin(role, email);
   };
 
   return (
