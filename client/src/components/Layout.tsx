@@ -18,12 +18,16 @@ interface LayoutProps {
   children: React.ReactNode;
   currentScreen: Screen;
   onNavigate: (screen: Screen) => void;
+  userRole?: string;
 }
 
-export default function Layout({ children, currentScreen, onNavigate }: LayoutProps) {
+export default function Layout({ children, currentScreen, onNavigate, userRole }: LayoutProps) {
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'fleet', label: 'Fleet', icon: Truck },
+    ...(userRole === 'fleet_manager' || userRole === 'safety_officer' 
+        ? [{ id: 'drivers' as Screen, label: 'Drivers', icon: Users }] 
+        : []),
     { id: 'maintenance', label: 'Maintenance', icon: Wrench },
     { id: 'reports', label: 'Analytics', icon: BarChart2 },
   ] as const;
@@ -61,10 +65,17 @@ export default function Layout({ children, currentScreen, onNavigate }: LayoutPr
           ))}
           
           <div className="mt-auto mb-4 border-t border-outline-variant/20 pt-4">
-             <div className="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-70 cursor-not-allowed">
+             <button 
+               onClick={() => onNavigate('settings')}
+               className={`flex w-full items-center gap-3 px-4 py-3 rounded-lg transition-all text-left ${
+                 currentScreen === 'settings'
+                   ? 'border-l-4 border-secondary-container bg-on-primary-fixed-variant text-on-tertiary active:scale-[0.99] rounded-l-none'
+                   : 'text-on-primary-container opacity-70 hover:bg-on-primary-fixed-variant hover:opacity-100'
+               }`}
+             >
               <Settings size={20} />
               <span className="text-label-md font-label-md">Settings</span>
-            </div>
+            </button>
           </div>
         </nav>
       </aside>

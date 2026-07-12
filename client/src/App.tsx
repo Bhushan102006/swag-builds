@@ -6,12 +6,15 @@ import Dashboard from './components/Dashboard';
 import VehicleRegistry from './components/VehicleRegistry';
 import Maintenance from './components/Maintenance';
 import Reports from './components/Reports';
+import Drivers from './components/Drivers';
+import Settings from './components/Settings';
 
-export type Screen = 'dashboard' | 'fleet' | 'maintenance' | 'reports';
+export type Screen = 'dashboard' | 'fleet' | 'drivers' | 'maintenance' | 'reports' | 'settings';
 type AuthScreen = 'login' | 'signup';
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userRole, setUserRole] = useState<string>('');
   const [authScreen, setAuthScreen] = useState<AuthScreen>('login');
   const [currentScreen, setCurrentScreen] = useState<Screen>('dashboard');
 
@@ -19,25 +22,27 @@ export default function App() {
     if (authScreen === 'signup') {
       return (
         <Signup
-          onSignup={() => setIsLoggedIn(true)}
+          onSignup={(r) => { setIsLoggedIn(true); setUserRole(r); }}
           onSwitchToLogin={() => setAuthScreen('login')}
         />
       );
     }
     return (
       <Login
-        onLogin={() => setIsLoggedIn(true)}
+        onLogin={(r) => { setIsLoggedIn(true); setUserRole(r); }}
         onSwitchToSignup={() => setAuthScreen('signup')}
       />
     );
   }
 
   return (
-    <Layout currentScreen={currentScreen} onNavigate={setCurrentScreen}>
+    <Layout currentScreen={currentScreen} onNavigate={setCurrentScreen} userRole={userRole}>
       {currentScreen === 'dashboard' && <Dashboard />}
       {currentScreen === 'fleet' && <VehicleRegistry />}
+      {currentScreen === 'drivers' && <Drivers />}
       {currentScreen === 'maintenance' && <Maintenance />}
       {currentScreen === 'reports' && <Reports />}
+      {currentScreen === 'settings' && <Settings />}
     </Layout>
   );
 }
