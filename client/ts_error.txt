@@ -1,0 +1,2 @@
+src/components/Drivers.tsx(235,19): error TS2322: Type '{ key: any; data: any; readOnly: boolean; onStatusChange: (status: DriverStatus) => void; }' is not assignable to type '{ data: DriverData; readOnly: boolean; onStatusChange: (status: DriverStatus) => void; }'.
+  Property 'key' does not exist on type '{ data: DriverData; readOnly: boolean; onStatusChange: (status: DriverStatus) => void; }'.
